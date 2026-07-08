@@ -1,0 +1,61 @@
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+lib/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python Caching & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Frontend/Node Dependencies & Builds
+node_modules/
+dist/
+build/
+.next/
+out/
+.docusaurus/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# OS Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*~
+
+# Project Scratchpads & Temporary Files
+.gemini/
+scratch/
+add_medicines.py
+edit_js*.py
+find_*.py
+seed_new_inventory.py

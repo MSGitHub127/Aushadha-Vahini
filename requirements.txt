@@ -1,0 +1,13 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+google-cloud-bigquery>=3.11.0
+google-cloud-texttospeech>=2.14.1
+google-generativeai>=0.8.6
+Pillow>=10.0.0
+pandas>=2.0.0
+db-dtypes>=1.1.0
+scipy>=1.10.0
+numpy>=1.24.0
+jinja2>=3.1.2
+google-cloud-translate>=3.15.0

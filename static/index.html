@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aushadha Vahini - AI PHC Inventory & Supply Chain Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=3.0">
+</head>
+<body>
+    <!-- Premium Glowing Background Effects -->
+    <div class="glow-bg-1"></div>
+    <div class="glow-bg-2"></div>
+
+    <div class="glass-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand-nav">
+                <div class="brand">
+                    <img src="/static/logo.png" alt="Aushadha Vahini Logo" class="brand-logo-img" onerror="this.style.display='none'; document.getElementById('brand-icon-fallback').style.display='flex';">
+                    <div class="brand-icon" id="brand-icon-fallback" style="display:none;">✚</div>
+                    <div class="brand-text">
+                        <h1 style="color: var(--accent-teal); font-weight:700;">Aushadha Vahini</h1>
+                        <span style="font-size: 8px; color: #94A3B8; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase;">Seva • Samarpan • Swasthya</span>
+                    </div>
+                </div>
+                
+                <!-- Sleek Language Selector Toggle -->
+                <div class="lang-selector-group">
+                    <button class="lang-btn active" id="lang-en" onclick="setLanguage('en')">English</button>
+                    <button class="lang-btn" id="lang-hi" onclick="setLanguage('hi')">हिन्दी</button>
+                </div>
+                
+                <nav class="nav-menu">
+                    <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+                        <span class="icon">📊</span> 
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-item" id="nav-doctors" onclick="switchTab('doctors')">
+                        <span class="icon">👨‍⚕️</span> 
+                        <span class="nav-label">Doctors</span>
+                    </button>
+                    <button class="nav-item" id="nav-beds" onclick="switchTab('beds')">
+                        <span class="icon">🛏️</span> 
+                        <span class="nav-label">Beds</span>
+                    </button>
+                    <button class="nav-item" id="nav-patients" onclick="switchTab('patients')">
+                        <span class="icon">👥</span> 
+                        <span class="nav-label">Patients</span>
+                    </button>
+                    <button class="nav-item" id="nav-upload" onclick="switchTab('upload')">
+                        <span class="icon">📷</span> 
+                        <span class="nav-label">Diagnostics (OCR)</span>
+                    </button>
+                    <button class="nav-item" id="nav-review" onclick="switchTab('review')">
+                        <span class="icon">🔍</span> 
+                        <span class="nav-label">Verification Queue</span>
+                        <span class="badge" id="review-badge" style="display:none;">0</span>
+                    </button>
+                    <button class="nav-item" id="nav-transfers" onclick="switchTab('transfers')">
+                        <span class="icon">🚚</span> 
+                        <span class="nav-label">AI Predictions</span>
+                    </button>
+                    <button class="nav-item" id="nav-reports" onclick="switchTab('reports')">
+                        <span class="icon">📝</span> 
+                        <span class="nav-label">Reports</span>
+                    </button>
+                    <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+                        <span class="icon">⚙️</span> 
+                        <span class="nav-label">Settings</span>
+                    </button>
+                </nav>
+            </div>
+            
+
+            <div class="user-profile">
+                <div class="avatar">👤</div>
+                <div class="profile-info">
+                    <strong>Dr. Ramesh Rao</strong>
+                    <span>District Officer</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" role="main">
+            <header class="content-header">
+                <div class="header-title">
+                    <h2 id="tab-title">District Overview</h2>
+                    <span id="tab-subtitle">Real-time PHC Inventory Status</span>
+                </div>
+                
+                <!-- Accessibility Controls (Elder Friendly) -->
+                <div class="accessibility-panel">
+                    <div class="acc-button-group">
+                        <span class="acc-label">Text Size:</span>
+                        <button class="btn btn-acc" onclick="changeFontSize('decrease')" title="Decrease Text Size">A-</button>
+                        <button class="btn btn-acc active" id="btn-font-normal" onclick="changeFontSize('normal')" title="Reset Text Size">A</button>
+                        <button class="btn btn-acc" onclick="changeFontSize('increase')" title="Increase Text Size">A+</button>
+                    </div>
+                    
+                    <div class="acc-button-group">
+                        <span class="acc-label">Voice Guide:</span>
+                        <button class="btn btn-voice" onclick="toggleVoiceGuide()" id="voice-guide-btn" title="Speak Screen Context">
+                            🔊 Assist
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB 1: DISTRICT MAP & STATUS OVERVIEW -->
+            <section id="tab-dashboard" class="tab-panel active">
+                
+                <!-- AI Assistant Hero Card -->
+                <div class="ai-hero-card card">
+                    <div class="ai-hero-header">
+                        <span class="ai-hero-sparkle" id="ai-hero-title">✨ AI Assistant (predictive & reasoning layers)</span>
+                        <span class="ai-hero-greet" id="greet-district-officer">Good Morning, District Officer</span>
+                    </div>
+                    <div class="ai-hero-body">
+                        <div class="ai-hero-alert-box">
+                            <span class="ai-hero-alert-icon">⚠️</span>
+                            <div class="ai-hero-alert-content">
+                                <strong id="ai-alert-title">PHC Utnoor: Paracetamol Low</strong>
+                                <span id="ai-alert-desc">ARIMA_PLUS model predicts shortage in 5 days due to a seasonal Dengue consumption spike.</span>
+                            </div>
+                        </div>
+                        <div class="ai-hero-action-box">
+                            <span id="ai-suggested-action-html">Suggested Action: Transfer <strong>120 units</strong> of Paracetamol from <strong>PHC Indervelly</strong> (Surplus).</span>
+                            <button class="btn btn-primary" onclick="acceptAiRecommendation()" id="btn-accept-recommendation-html">
+                                ⚡ Accept Recommendation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary Strip (Glanceable Tiles) -->
+                <div class="summary-strip" role="region" aria-label="Executive Summary Overview">
+                    <div class="summary-tile" id="tile-stockouts">
+                        <span class="tile-icon">💊</span>
+                        <div class="tile-content">
+                            <span class="tile-value" id="val-stockouts">82%</span>
+                            <span class="tile-label" id="alert-val-stock">Medicine Stock</span>
+                        </div>
+                    </div>
+                    <div class="summary-tile" id="tile-beds">
+                        <span class="tile-icon">🛏️</span>
+                        <div class="tile-content">
+                            <span class="tile-value" id="val-beds">74%</span>
+                            <span class="tile-label" id="alert-val-beds">Bed Availability</span>
+                        </div>
+                    </div>
+                    <div class="summary-tile" id="tile-doctors">
+                        <span class="tile-icon">👨‍⚕️</span>
+                        <div class="tile-content">
+                            <span class="tile-value" id="val-doctors">91%</span>
+                            <span class="tile-label" id="alert-val-docs">Doctor Attendance</span>
+                        </div>
+                    </div>
+                    <div class="summary-tile" id="tile-footfall">
+                        <span class="tile-icon">📈</span>
+                        <div class="tile-content">
+                            <span class="tile-value" id="val-footfall">+18%</span>
+                            <span class="tile-label" id="alert-val-patients">Patient Footfall</span>
+                        </div>
+                    </div>
+                    <div class="summary-tile" id="tile-alerts">
+                        <span class="tile-icon">🚨</span>
+                        <div class="tile-content">
+                            <span class="tile-value" id="val-alerts">4</span>
+                            <span class="tile-label" id="alert-val-critical">Critical Alerts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="map-card card" id="spatial-map-section">
+                        <div class="card-header">
+                            <h3 id="map-card-title">🗺️ District Spatial Map (Adilabad)</h3>
+                            <span class="card-desc" id="map-card-desc">Green = Healthy, Yellow = Warning, Red = Deficit. Click nodes to select PHC.</span>
+                        </div>
+                        <div class="map-container">
+                            <svg viewBox="0 0 500 400" id="district-svg-map">
+                                <rect width="100%" height="100%" fill="none" />
+                                <g id="map-routes"></g>
+                                <g id="map-nodes"></g>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Alerts and Metrics -->
+                    <div class="alerts-side">
+                        <div class="card alerts-card" id="inventory-shortages-section">
+                            <div class="card-header">
+                                <h3 id="shortages-title">⚠️ Active Inventory Shortages</h3>
+                            </div>
+                            <div class="alerts-list" id="alerts-container" aria-live="polite">
+                                <div class="loader">Loading alerts...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="card info-card">
+                            <div class="card-header">
+                                <h3 id="calib-card-title">⚙️ System Calibration</h3>
+                            </div>
+                            <div class="metrics-list">
+                                <div class="metric-row">
+                                    <span>Insulin/Oxytocin Priority</span>
+                                    <strong class="tag critical">10x Urgency</strong>
+                                </div>
+                                <div class="metric-row">
+                                    <span>Routine Antibiotic Priority</span>
+                                    <strong class="tag optimal">1x Urgency</strong>
+                                </div>
+                                <div class="metric-row">
+                                    <span>Safety Margin Threshold</span>
+                                    <strong>5 Days Coverage</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Charts and Recent Alerts Timeline -->
+                <div class="analytics-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3 id="trend-card-title">📊 Medicine Consumption & Patient Footfall</h3>
+                            <span class="card-desc" id="trend-card-desc">Weekly trending data across Adilabad clinics</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <svg viewBox="0 0 500 200" class="premium-chart">
+                                <defs>
+                                    <linearGradient id="chart-grad-blue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--accent-blue)" stop-opacity="0.25"/>
+                                        <stop offset="100%" stop-color="var(--accent-blue)" stop-opacity="0"/>
+                                    </linearGradient>
+                                    <linearGradient id="chart-grad-green" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.25"/>
+                                        <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <line x1="40" y1="20" x2="480" y2="20" stroke="rgba(20, 50, 74, 0.05)" stroke-dasharray="4"/>
+                                <line x1="40" y1="70" x2="480" y2="70" stroke="rgba(20, 50, 74, 0.05)" stroke-dasharray="4"/>
+                                <line x1="40" y1="120" x2="480" y2="120" stroke="rgba(20, 50, 74, 0.05)" stroke-dasharray="4"/>
+                                <line x1="40" y1="170" x2="480" y2="170" stroke="rgba(20, 50, 74, 0.08)"/>
+                                
+                                <path d="M40,150 Q100,80 180,110 T320,50 T480,90 L480,170 L40,170 Z" fill="url(#chart-grad-blue)"/>
+                                <path d="M40,150 Q100,80 180,110 T320,50 T480,90" fill="none" stroke="var(--accent-blue)" stroke-width="3" stroke-linecap="round"/>
+                                
+                                <path d="M40,120 Q120,140 200,60 T360,130 T480,40 L480,170 L40,170 Z" fill="url(#chart-grad-green)"/>
+                                <path d="M40,120 Q120,140 200,60 T360,130 T480,40" fill="none" stroke="var(--accent-green)" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 2"/>
+                                
+                                <circle cx="180" cy="110" r="4" fill="var(--accent-blue)"/>
+                                <circle cx="320" cy="50" r="4" fill="var(--accent-blue)"/>
+                                <circle cx="200" cy="60" r="4" fill="var(--accent-green)"/>
+                                
+                                <text x="35" y="175" class="axis-label" text-anchor="end" font-size="10" fill="var(--text-secondary)">0</text>
+                                <text x="35" y="125" class="axis-label" text-anchor="end" font-size="10" fill="var(--text-secondary)">50</text>
+                                <text x="35" y="75" class="axis-label" text-anchor="end" font-size="10" fill="var(--text-secondary)">100</text>
+                                <text x="40" y="190" class="axis-label" font-size="10" fill="var(--text-secondary)">Mon</text>
+                                <text x="150" y="190" class="axis-label" font-size="10" fill="var(--text-secondary)">Wed</text>
+                                <text x="260" y="190" class="axis-label" font-size="10" fill="var(--text-secondary)">Fri</text>
+                                <text x="370" y="190" class="axis-label" font-size="10" fill="var(--text-secondary)">Sun</text>
+                                <text x="480" y="190" class="axis-label" font-size="10" fill="var(--text-secondary)" text-anchor="end">Today</text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="card timeline-card">
+                        <div class="card-header">
+                            <h3 id="timeline-card-title">📜 Live Activity & Alerts Timeline</h3>
+                            <span class="card-desc" id="timeline-card-desc">Adilabad PHC network audit events</span>
+                        </div>
+                        <div class="timeline-list">
+                            <div class="timeline-item critical">
+                                <span class="time">10:02</span>
+                                <div class="timeline-content-item">
+                                    <strong>PHC Utnoor</strong>
+                                    <span id="event-utnoor-desc">Paracetamol stock levels critical</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item warning">
+                                <span class="time">09:41</span>
+                                <div class="timeline-content-item">
+                                    <strong>PHC Narnoor</strong>
+                                    <span id="event-narnoor-desc">1 Doctor Absent (O.D. leave)</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item warning">
+                                <span class="time">08:50</span>
+                                <div class="timeline-content-item">
+                                    <strong>PHC Bazarhatnoor</strong>
+                                    <span id="event-bazar-desc">Bed Occupancy reached 85%</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item optimal">
+                                <span class="time">08:12</span>
+                                <div class="timeline-content-item">
+                                    <strong>PHC Indervelly</strong>
+                                    <span id="event-inder-desc">OCR sheet verified & committed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- TAB: DOCTORS -->
+            <section id="tab-doctors" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-desc" id="doc-card-desc">Real-time attendance registry and clinic assignments across the district.</p>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th id="doc-th-name">Doctor Name</th>
+                                <th id="doc-th-spec">Specialization</th>
+                                <th id="doc-th-phc">Assigned PHC</th>
+                                <th id="doc-th-status">Today's Status</th>
+                                <th id="doc-th-time">Check-in Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong data-translate-doc="ramesh">Dr. Ramesh Rao</strong></td>
+                                <td>General Medicine (D.O.)</td>
+                                <td><span data-translate-phc="utnoor">PHC Utnoor</span></td>
+                                <td><span class="tag optimal" data-translate-status="present">Present</span></td>
+                                <td>08:45 AM</td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-doc="ananya">Dr. Ananya Reddy</strong></td>
+                                <td>Pediatrics</td>
+                                <td><span data-translate-phc="indervelly">PHC Indervelly</span></td>
+                                <td><span class="tag optimal" data-translate-status="present">Present</span></td>
+                                <td>09:00 AM</td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-doc="suresh">Dr. Suresh Naidu</strong></td>
+                                <td>Gynecology</td>
+                                <td><span data-translate-phc="narnoor">PHC Narnoor</span></td>
+                                <td><span class="tag critical" style="background:#FEE2E2; color:#EF4444;" data-translate-status="absent">Absent (On Leave)</span></td>
+                                <td>--</td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-doc="srinivas">Dr. K. Srinivas</strong></td>
+                                <td>General Surgery</td>
+                                <td><span data-translate-phc="ichoda">PHC Ichoda</span></td>
+                                <td><span class="tag optimal" data-translate-status="present">Present</span></td>
+                                <td>08:30 AM</td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-doc="monica">Dr. Monica Paul</strong></td>
+                                <td>General Medicine</td>
+                                <td><span data-translate-phc="bazarhatnoor">PHC Bazarhatnoor</span></td>
+                                <td><span class="tag warning" style="background:#FEF3C7; color:#D97706;" data-translate-status="late">Late</span></td>
+                                <td>09:35 AM</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB: BEDS -->
+            <section id="tab-beds" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-desc" id="beds-card-desc">Live status of critical care, general, and emergency wards in Adilabad clinics.</p>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th id="beds-th-phc">Primary Health Center</th>
+                                <th id="beds-th-gen">General Wards</th>
+                                <th id="beds-th-icu">Emergency / ICU Wards</th>
+                                <th id="beds-th-occ">Total Wards Occupancy</th>
+                                <th id="beds-th-act">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong data-translate-phc="utnoor">PHC Utnoor</strong></td>
+                                <td>12 / 15 <span data-translate-word="available">Available</span></td>
+                                <td>2 / 4 <span data-translate-word="available">Available</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex-grow:1; background:#E2E8F0; height:8px; border-radius:4px; overflow:hidden;"><div style="width:26%; background:var(--accent-blue); height:100%;"></div></div>
+                                        <span>26% <span data-translate-word="occupied">Occupied</span></span>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('manage-bed')" data-translate-word="manage">Manage</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="indervelly">PHC Indervelly</strong></td>
+                                <td>8 / 12 <span data-translate-word="available">Available</span></td>
+                                <td>3 / 3 <span data-translate-word="available">Available</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex-grow:1; background:#E2E8F0; height:8px; border-radius:4px; overflow:hidden;"><div style="width:27%; background:var(--accent-blue); height:100%;"></div></div>
+                                        <span>27% <span data-translate-word="occupied">Occupied</span></span>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('manage-bed')" data-translate-word="manage">Manage</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="narnoor">PHC Narnoor</strong></td>
+                                <td>2 / 10 <span data-translate-word="available">Available</span></td>
+                                <td>0 / 2 <span data-translate-word="available">Available</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex-grow:1; background:#E2E8F0; height:8px; border-radius:4px; overflow:hidden;"><div style="width:83%; background:var(--accent-red); height:100%;"></div></div>
+                                        <span>83% (<span data-translate-word="critical">Critical</span>)</span>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px; background:#EF4444; color:white; border-color:#EF4444;" onclick="triggerAlert('crit-bed')" data-translate-word="emergency">Emergency</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="ichoda">PHC Ichoda</strong></td>
+                                <td>14 / 20 <span data-translate-word="available">Available</span></td>
+                                <td>4 / 5 <span data-translate-word="available">Available</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex-grow:1; background:#E2E8F0; height:8px; border-radius:4px; overflow:hidden;"><div style="width:30%; background:var(--accent-blue); height:100%;"></div></div>
+                                        <span>30% <span data-translate-word="occupied">Occupied</span></span>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('manage-bed')" data-translate-word="manage">Manage</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="bazarhatnoor">PHC Bazarhatnoor</strong></td>
+                                <td>3 / 12 <span data-translate-word="available">Available</span></td>
+                                <td>1 / 3 <span data-translate-word="available">Available</span></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div style="flex-grow:1; background:#E2E8F0; height:8px; border-radius:4px; overflow:hidden;"><div style="width:73%; background:var(--accent-yellow); height:100%;"></div></div>
+                                        <span>73% (<span data-translate-word="high">High</span>)</span>
+                                    </div>
+                                </td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('manage-bed')" data-translate-word="manage">Manage</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB: PATIENTS -->
+            <section id="tab-patients" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-desc" id="pat-card-desc">Active registrations, disease triages, and weekly case allocations.</p>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th id="pat-th-phc">PHC Clinic</th>
+                                <th id="pat-th-opd">Daily OPD Count</th>
+                                <th id="pat-th-sym">Predominant Symptoms / Diagnostics</th>
+                                <th id="pat-th-sev">Triage Severity</th>
+                                <th id="pat-th-act">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong data-translate-phc="utnoor">PHC Utnoor</strong></td>
+                                <td>142 <span data-translate-word="patients">patients</span></td>
+                                <td>Viral Fever, Cough, Malaria</td>
+                                <td><span class="tag warning" style="background:#FEF3C7; color:#D97706;" data-translate-status="moderate">Moderate</span></td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('triage-utnoor')" data-translate-word="details">Details</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="indervelly">PHC Indervelly</strong></td>
+                                <td>89 <span data-translate-word="patients">patients</span></td>
+                                <td>Routine Immunization, General Pain</td>
+                                <td><span class="tag optimal" data-translate-status="lowrisk">Low Risk</span></td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('triage-indervelly')" data-translate-word="details">Details</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="narnoor">PHC Narnoor</strong></td>
+                                <td>218 <span data-translate-word="patients">patients</span></td>
+                                <td>Seasonal Dengue Spike, Body Pain</td>
+                                <td><span class="tag critical" style="background:#FEE2E2; color:#EF4444;" data-translate-status="severe">Severe Outbreak</span></td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px; background:#EF4444; color:white; border-color:#EF4444;" onclick="triggerAlert('triage-dengue')" data-translate-word="epidemic_alert">Epidemic Alert</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="ichoda">PHC Ichoda</strong></td>
+                                <td>105 <span data-translate-word="patients">patients</span></td>
+                                <td>Gastroenteritis, Dysentery</td>
+                                <td><span class="tag warning" style="background:#FEF3C7; color:#D97706;" data-translate-status="moderate">Moderate</span></td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('triage-ichoda')" data-translate-word="details">Details</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong data-translate-phc="bazarhatnoor">PHC Bazarhatnoor</strong></td>
+                                <td>112 <span data-translate-word="patients">patients</span></td>
+                                <td>Acute Respiratory Infections</td>
+                                <td><span class="tag warning" style="background:#FEF3C7; color:#D97706;" data-translate-status="moderate">Moderate</span></td>
+                                <td><button class="btn btn-play" style="padding:6px 12px; font-size:11px;" onclick="triggerAlert('triage-bazar')" data-translate-word="details">Details</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB: REPORTS -->
+            <section id="tab-reports" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="rep-card-title">📝 District Supply Audits & Reports</h3>
+                        <p class="card-desc" id="rep-card-desc">Download consolidated reports or generate direct National Health Mission compliance files.</p>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:25px; margin-top:20px;">
+                        <div class="card" style="margin-bottom:0;">
+                            <h4 id="rep-sub1-title">Standard Supply Logs</h4>
+                            <p style="font-size:13px; color:var(--text-secondary); margin:10px 0 20px 0;" id="rep-sub1-desc">Automated monthly inventory reports detailing deficit audits and transfer summaries.</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/api/reports/nhm'" id="btn-gen-nhm">📄 Generate NHM Report</button>
+                        </div>
+                        <div class="card" style="margin-bottom:0;">
+                            <h4 id="rep-sub2-title">Logistics Transfer Ledger</h4>
+                            <p style="font-size:13px; color:var(--text-secondary); margin:10px 0 20px 0;" id="rep-sub2-desc">Complete list of transfers recommended, approved, and completed between Adilabad PHCs.</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/api/reports/transfers'" id="btn-download-ledger">📊 Download Transfer Ledger</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: SETTINGS -->
+            <section id="tab-settings" class="tab-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <p class="card-desc" id="set-card-desc">Configure BQ ARIMA_PLUS model parameters, emergency thresholds, and audio rate overrides.</p>
+                    </div>
+                    <div class="metrics-list" style="margin-top:20px; max-width:600px; display:flex; flex-direction:column; gap:20px;">
+                        <div>
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-primary);" id="label-horizon">ARIMA Forecasting Horizon (Days)</label>
+                            <input type="range" min="5" max="30" value="14" style="width:100%;" oninput="document.getElementById('horizon-val').innerText = this.value + ' Days'">
+                            <span id="horizon-val" style="font-size:11px; font-weight:600; color:var(--accent-blue);">14 Days</span>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-primary);" id="label-radius">Redistribution Route Search Radius (KM)</label>
+                            <input type="range" min="10" max="100" value="30" style="width:100%;" oninput="document.getElementById('radius-val').innerText = this.value + ' KM'">
+                            <span id="radius-val" style="font-size:11px; font-weight:600; color:var(--accent-blue);">30 KM</span>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-primary);" id="label-speed">TTS Spoken Voice Rate Modifier</label>
+                            <input type="range" min="0.5" max="2" step="0.1" value="1" style="width:100%;" oninput="document.getElementById('speed-val').innerText = this.value + 'x'">
+                            <span id="speed-val" style="font-size:11px; font-weight:600; color:var(--accent-blue);">1x Speed</span>
+                        </div>
+                        <div style="margin-top:15px;">
+                            <button class="btn btn-primary" onclick="triggerAlert('save-calib')" id="btn-save-settings">💾 Save Calibration Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: UPLOAD STOCK SHEET -->
+            <section id="tab-upload" class="tab-panel">
+                <div class="upload-grid">
+                    <div class="card upload-card">
+                        <div class="card-header">
+                            <h3 id="ocr-title">📷 Upload Daily Log Sheet / Stock Photo</h3>
+                            <p class="card-desc" id="ocr-subtitle">Snap or upload a photo of the handwritten stock sheet. Gemini AI digitizes and updates counts automatically.</p>
+                        </div>
+                        
+                        <div class="upload-zone" id="drop-zone">
+                            <div class="upload-art">
+                                <span class="pulse-ring"></span>
+                                <span class="upload-icon">📸</span>
+                            </div>
+                            <p class="upload-main-text" id="drag-drop-text">Drag & Drop Image Here or Click to Scan</p>
+                            <p class="upload-sub-text" id="upload-zone-sub">Supports JPG, PNG, WebP format</p>
+                            <input type="file" id="file-input" accept="image/*" style="display: none;">
+                            
+                            <div class="phc-select-container">
+                                <label for="phc-selector" id="select-phc-label">Select Primary Health Center: </label>
+                                <select id="phc-selector">
+                                    <option value="1">PHC Utnoor</option>
+                                    <option value="2">PHC Indervelly</option>
+                                    <option value="3">PHC Narnoor</option>
+                                    <option value="4">PHC Ichoda</option>
+                                    <option value="5">PHC Bazarhatnoor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="progress-bar-container" id="upload-progress-container" style="display: none;">
+                            <div class="progress-bar" id="upload-progress"></div>
+                            <span id="progress-text">Processing image with Gemini Multimodal Vision API...</span>
+                        </div>
+
+                    </div>
+
+                    <!-- OCR Output Preview -->
+                    <div class="card preview-card">
+                        <div class="card-header">
+                            <h3 id="preview-title">🔍 Gemini Extraction Live Preview</h3>
+                        </div>
+                        <div class="preview-content" id="ocr-preview-container" aria-live="polite">
+                            <div class="preview-placeholder" id="preview-placeholder-text">
+                                Image extraction results will render here after upload.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: VERIFICATION QUEUE -->
+            <section id="tab-review" class="tab-panel">
+                <div class="review-layout">
+                    <div class="card review-list-card">
+                        <div class="card-header">
+                            <h3 id="review-title">✏️ Human-in-the-Loop Review Queue</h3>
+                            <p class="card-desc" id="review-desc">Review and correct low-confidence OCR results. Verify values against the uploaded image reference before updating inventory.</p>
+                        </div>
+                        
+                        <div class="review-items-container" id="review-container" aria-live="polite">
+                            <div class="preview-placeholder">Verification queue is currently empty.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: ROUTE OPTIMIZER -->
+            <section id="tab-transfers" class="tab-panel">
+                <div class="transfers-layout">
+                    <div class="card transfers-control-card">
+                        <div class="transfers-header">
+                            <div>
+                                <h3 id="optimizer-title">🚚 Drug Redistribution Routing Optimizer</h3>
+                                <p class="card-desc" id="optimizer-desc">Calculates optimal drug transfers from surplus clinics to deficit clinics. Minimizes driving distances using the Haversine equation.</p>
+                            </div>
+                            <button class="btn btn-primary btn-large" onclick="runOptimization()" id="btn-run-optimization">
+                                🚀 Run Redistribution Optimizer
+                            </button>
+                        </div>
+
+                        <!-- Audio TTS notification bar -->
+                        <div class="tts-notification-bar" id="tts-bar" style="display: none;">
+                            <div class="tts-icon-pulse">🔊</div>
+                            <div class="tts-content">
+                                <strong id="tts-spokes-title">System Spoken Advisory (Hindi Multi-Lang SSML)</strong>
+                                <p id="tts-text"></p>
+                                <audio id="tts-audio" controls style="display:none;"></audio>
+                                <button class="btn btn-play" onclick="playTTS(true)" id="btn-listen-tts">🔊 Listen Spoken Alert</button>
+                            </div>
+                        </div>
+
+                        <div class="transfers-results">
+                            <table class="data-table" id="transfers-table">
+                                <thead>
+                                    <tr>
+                                        <th id="trans-th-status">Urgency</th>
+                                        <th id="trans-th-med">Medicine</th>
+                                        <th id="trans-th-src">Source Clinic</th>
+                                        <th id="trans-th-tgt">Destination Clinic</th>
+                                        <th id="trans-th-qty">Transfer Quantity</th>
+                                        <th id="trans-th-dist">Route Distance</th>
+                                        <th id="trans-th-impact">Impact Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transfers-tbody">
+                                    <tr>
+                                        <td colspan="7" class="text-center" id="transfers-fallback-prompt">Click "Run Redistribution Optimizer" to calculate supply routing plans.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="demo-modal" style="display: none;" onclick="closeDemoModal()">
+        <div class="modal-card card" onclick="event.stopPropagation()">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
+                <h3 id="modal-feature-title" style="font-size:16px; font-weight:700; color:var(--text-primary);">Feature Module</h3>
+                <button class="btn-close" onclick="closeDemoModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-secondary);">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">This is part of the integrated <strong>Aushadha Vahini SaaS Suite</strong>.</p>
+                <p id="modal-feature-desc" style="font-size:13px; color:var(--text-primary); margin-bottom:16px; line-height:1.4;">Active tracking details are currently simulated for the Adilabad District health network pilot.</p>
+                <div style="background:rgba(27, 127, 90, 0.08); border-left:3px solid var(--accent-green); padding:8px 12px; border-radius:4px; font-size:11px; color:var(--accent-green); font-weight:600; margin-bottom:20px; display:inline-block;">
+                    🟢 Active District Pilot Telemetry
+                </div>
+                <div style="text-align:right;">
+                    <button class="btn btn-primary" onclick="closeDemoModal()" style="padding:8px 16px; font-size:13px; border-radius:8px;">Dismiss</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script_v10.js"></script>
+</body>
+</html>
