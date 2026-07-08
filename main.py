@@ -97,17 +97,23 @@ def get_inventory():
 
     try:
         sql = f"""
+        WITH latest_inventory AS (
+          SELECT *,
+            ROW_NUMBER() OVER(PARTITION BY phc_id, medicine_id ORDER BY last_updated DESC) as rn
+          FROM `{PROJECT_ID}.{DATASET_ID}.inventory`
+        )
         SELECT 
           i.phc_id, p.name as phc_name, i.medicine_id, m.name as medicine_name, 
           m.drug_class, m.unit, i.current_stock, i.safety_threshold, i.last_updated
-        FROM `{PROJECT_ID}.{DATASET_ID}.inventory` i
+        FROM latest_inventory i
         JOIN `{PROJECT_ID}.{DATASET_ID}.phcs` p ON i.phc_id = p.id
         JOIN `{PROJECT_ID}.{DATASET_ID}.medicines` m ON i.medicine_id = m.id
+        WHERE i.rn = 1
         ORDER BY phc_id, medicine_id
         """
         query_job = client.query(sql)
-        df = query_job.to_dataframe()
-        return df.to_dict(orient="records")
+        results = query_job.result()
+        return [{k: v for k, v in row.items()} for row in results]
     except Exception as e:
         logger.error(f"BQ inventory fetch failed: {e}. Returning mock state.")
         flat_inventory = []
@@ -187,11 +193,17 @@ async def upload_log(image: UploadFile = File(...), phc_id: int = Form(...)):
                 for item in items:
                     # Update stock in BigQuery. Enforce exact match on medicine name
                     sql = f"""
-                    UPDATE `{PROJECT_ID}.{DATASET_ID}.inventory`
-                    SET current_stock = {item['quantity']}, last_updated = '{now_str}'
-                    WHERE phc_id = {phc_id} AND medicine_id = (
-                      SELECT id FROM `{PROJECT_ID}.{DATASET_ID}.medicines` WHERE LOWER(name) = LOWER('{item['medicine_name']}') LIMIT 1
-                    )
+                    INSERT INTO `{PROJECT_ID}.{DATASET_ID}.inventory` (phc_id, medicine_id, current_stock, safety_threshold, last_updated)
+                    SELECT {phc_id}, m.id, {item['quantity']}, COALESCE(i.safety_threshold, 20), '{now_str}'
+                    FROM `{PROJECT_ID}.{DATASET_ID}.medicines` m
+                    LEFT JOIN (
+                      SELECT medicine_id, safety_threshold 
+                      FROM `{PROJECT_ID}.{DATASET_ID}.inventory` 
+                      WHERE phc_id = {phc_id}
+                      QUALIFY ROW_NUMBER() OVER(PARTITION BY medicine_id ORDER BY last_updated DESC) = 1
+                    ) i ON m.id = i.medicine_id
+                    WHERE LOWER(m.name) = LOWER('{item['medicine_name']}')
+                    LIMIT 1
                     """
                     client.query(sql).result()
             except Exception as e:
@@ -218,8 +230,8 @@ async def upload_log(image: UploadFile = File(...), phc_id: int = Form(...)):
                     # Get medicine ID matching the name
                     sql = f"SELECT id FROM `{PROJECT_ID}.{DATASET_ID}.medicines` WHERE LOWER(name) = LOWER('{item['medicine_name']}') LIMIT 1"
                     query_job = client.query(sql)
-                    med_df = query_job.to_dataframe()
-                    med_id = int(med_df.iloc[0]["id"]) if not med_df.empty else 1 # Fallback to paracetamol
+                    med_rows = list(query_job.result())
+                    med_id = int(med_rows[0]["id"]) if med_rows else 1 # Fallback to paracetamol
                     
                     # Encode original medicine name inside image_url query param
                     import urllib.parse
@@ -237,7 +249,10 @@ async def upload_log(image: UploadFile = File(...), phc_id: int = Form(...)):
                     })
                 
                 queue_table = f"{PROJECT_ID}.{DATASET_ID}.inventory_review_queue"
-                client.insert_rows_json(queue_table, queue_rows)
+                job_config = bigquery.LoadJobConfig(
+                    write_disposition="WRITE_APPEND"
+                )
+                client.load_table_from_json(queue_rows, queue_table, job_config=job_config).result()
             except Exception as e:
                 logger.error(f"BQ review queue write failed: {e}. Writing to mock review queue.")
                 write_local_mock_review_queue(batch_id, phc_id, items, confidence, image_url)
@@ -273,14 +288,14 @@ def get_review_queue():
         ORDER BY rq.created_at DESC
         """
         query_job = client.query(sql)
-        df = query_job.to_dataframe()
+        results = query_job.result()
         
         # Group by batch_id
         grouped = {}
-        for _, row in df.iterrows():
+        for row in results:
             bid = row["batch_id"]
             
-            img_url = str(row["image_url"])
+            img_url = str(row["image_url"]) if row["image_url"] is not None else ""
             
             # Parse out original predicted name from image_url if present
             ocr_name = str(row["medicine_name"])
@@ -337,15 +352,15 @@ def approve_review_item(payload: dict):
                 # Resolve medicine ID by name matching
                 sql = f"SELECT id FROM `{PROJECT_ID}.{DATASET_ID}.medicines` WHERE LOWER(name) = LOWER('{safe_name}') LIMIT 1"
                 query_job = client.query(sql)
-                med_df = query_job.to_dataframe()
+                med_rows = list(query_job.result())
                 
-                if not med_df.empty:
-                    med_id = int(med_df.iloc[0]["id"])
+                if med_rows:
+                    med_id = int(med_rows[0]["id"])
                 else:
                     # Dynamically register new medicine
                     max_job = client.query(f"SELECT MAX(id) as max_id FROM `{PROJECT_ID}.{DATASET_ID}.medicines`")
-                    max_df = max_job.to_dataframe()
-                    next_id = int(max_df.iloc[0]["max_id"]) + 1 if not max_df.empty and max_df.iloc[0]["max_id"] is not None else 15
+                    max_rows = list(max_job.result())
+                    next_id = int(max_rows[0]["max_id"]) + 1 if max_rows and max_rows[0]["max_id"] is not None else 15
                     
                     insert_med_sql = f"INSERT INTO `{PROJECT_ID}.{DATASET_ID}.medicines` (id, name, unit, drug_class) VALUES ({next_id}, '{safe_name}', 'Tablets', 'ROUTINE')"
                     client.query(insert_med_sql).result()
@@ -358,12 +373,14 @@ def approve_review_item(payload: dict):
                     med_id = next_id
                     logger.info(f"Dynamically registered '{safe_name}' (ID: {med_id}) in BigQuery.")
                 
-                update_sql = f"""
-                UPDATE `{PROJECT_ID}.{DATASET_ID}.inventory`
-                SET current_stock = {item['quantity']}, last_updated = '{now_str}'
+                insert_sql = f"""
+                INSERT INTO `{PROJECT_ID}.{DATASET_ID}.inventory` (phc_id, medicine_id, current_stock, safety_threshold, last_updated)
+                SELECT {phc_id}, {med_id}, {item['quantity']}, safety_threshold, '{now_str}'
+                FROM `{PROJECT_ID}.{DATASET_ID}.inventory`
                 WHERE phc_id = {phc_id} AND medicine_id = {med_id}
+                LIMIT 1
                 """
-                client.query(update_sql).result()
+                client.query(insert_sql).result()
                 
             # 2. Delete from review queue
             del_sql = f"DELETE FROM `{PROJECT_ID}.{DATASET_ID}.inventory_review_queue` WHERE id = '{batch_id}'"
@@ -537,15 +554,21 @@ def get_nhm_report():
     if client:
         try:
             sql = f"""
+            WITH latest_inventory AS (
+              SELECT *,
+                ROW_NUMBER() OVER(PARTITION BY phc_id, medicine_id ORDER BY last_updated DESC) as rn
+              FROM `{PROJECT_ID}.{DATASET_ID}.inventory`
+            )
             SELECT 
               p.name as phc_name, m.name as medicine_name, i.current_stock, i.safety_threshold
-            FROM `{PROJECT_ID}.{DATASET_ID}.inventory` i
+            FROM latest_inventory i
             JOIN `{PROJECT_ID}.{DATASET_ID}.phcs` p ON i.phc_id = p.id
             JOIN `{PROJECT_ID}.{DATASET_ID}.medicines` m ON i.medicine_id = m.id
+            WHERE i.rn = 1
             ORDER BY p.name, m.name
             """
-            df = client.query(sql).to_dataframe()
-            for _, row in df.iterrows():
+            results = client.query(sql).result()
+            for row in results:
                 stock = int(row["current_stock"])
                 safety = int(row["safety_threshold"])
                 deficit = max(0, safety - stock)
@@ -597,8 +620,8 @@ def get_transfers_report():
             JOIN `{PROJECT_ID}.{DATASET_ID}.medicines` m ON t.medicine_id = m.id
             ORDER BY t.created_at DESC
             """
-            df = client.query(sql).to_dataframe()
-            for _, row in df.iterrows():
+            results = client.query(sql).result()
+            for row in results:
                 writer.writerow([
                     row["id"], row["source_phc"], row["target_phc"],
                     row["medicine_name"], row["quantity"], row["status"], row["created_at"]

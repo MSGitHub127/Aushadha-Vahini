@@ -31,6 +31,11 @@ def evaluate_forecasts():
         AVG(GREATEST(forecast_value, 0)) as avg_daily_forecast
       FROM ML.FORECAST(MODEL `{PROJECT_ID}.{DATASET_ID}.forecast_model`, STRUCT(15 AS horizon))
       GROUP BY phc_id, medicine_id
+    ),
+    latest_inventory AS (
+      SELECT *,
+        ROW_NUMBER() OVER(PARTITION BY phc_id, medicine_id ORDER BY last_updated DESC) as rn
+      FROM `{PROJECT_ID}.{DATASET_ID}.inventory`
     )
     SELECT 
       p.id as phc_id,
@@ -43,10 +48,11 @@ def evaluate_forecasts():
       i.safety_threshold,
       COALESCE(f.total_forecasted_demand_15d, 15 * (i.safety_threshold / 5.0)) as total_forecast_15d,
       COALESCE(f.avg_daily_forecast, i.safety_threshold / 5.0) as avg_daily_forecast
-    FROM `{PROJECT_ID}.{DATASET_ID}.inventory` i
+    FROM latest_inventory i
     JOIN `{PROJECT_ID}.{DATASET_ID}.phcs` p ON i.phc_id = p.id
     JOIN `{PROJECT_ID}.{DATASET_ID}.medicines` m ON i.medicine_id = m.id
     LEFT JOIN forecast_summary f ON i.phc_id = f.phc_id AND i.medicine_id = f.medicine_id
+    WHERE i.rn = 1
     """
 
     try:

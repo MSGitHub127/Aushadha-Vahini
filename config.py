@@ -12,7 +12,8 @@ if os.path.exists(env_path):
                     k, v = key_val
                     k = k.strip()
                     v = v.strip().strip('"').strip("'")
-                    os.environ[k] = v
+                    if k not in os.environ:
+                        os.environ[k] = v
 
 # Project-wide GCP configurations
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT") or "smart-health-hackathon-demo"

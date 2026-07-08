@@ -8,6 +8,21 @@ from config import PROJECT_ID, DATASET_ID, LOCATION
 def get_client():
     return bigquery.Client(project=PROJECT_ID)
 
+def insert_rows_with_retry(client, table_id, rows):
+    import time
+    for attempt in range(15):
+        try:
+            errors = client.insert_rows_json(table_id, rows)
+            if errors:
+                raise Exception(f"Insert errors: {errors}")
+            return
+        except Exception as e:
+            if "not found" in str(e).lower() and attempt < 14:
+                print(f"Table {table_id} not found yet. Sleeping 4s and retrying (attempt {attempt+1}/15)...")
+                time.sleep(4)
+            else:
+                raise e
+
 def create_tables():
     client = get_client()
     
@@ -72,6 +87,15 @@ def create_tables():
 
     for table_name, schema in schemas.items():
         table_ref = bigquery.TableReference(dataset_ref, table_name)
+        
+        # WIPE/DROP Table to bypass streaming buffer locks on multiple runs
+        if table_name in ["phcs", "medicines", "inventory", "consumption_history", "transfers"]:
+            try:
+                client.delete_table(table_ref, not_found_ok=True)
+                print(f"Dropped table {table_name} for reset.")
+            except Exception as e:
+                print(f"Error dropping table {table_name}: {e}")
+                
         table = bigquery.Table(table_ref, schema=schema)
         try:
             client.create_table(table, exists_ok=True)
@@ -91,9 +115,9 @@ def seed_data():
         {"id": 5, "name": "PHC Bazarhatnoor", "sub_district": "Bazarhatnoor", "lat": 19.4611, "lon": 78.3524},
     ]
     phc_table = f"{PROJECT_ID}.{DATASET_ID}.phcs"
-    client.insert_rows_json(phc_table, phc_data)
+    insert_rows_with_retry(client, phc_table, phc_data)
     print("PHCs table seeded.")
-
+ 
     # 2. Seed Medicines
     medicine_data = [
         {"id": 1, "name": "Amoxicillin", "unit": "Tablets", "drug_class": "ROUTINE"},
@@ -112,7 +136,7 @@ def seed_data():
         {"id": 14, "name": "Zinc Sulphate", "unit": "Tablets", "drug_class": "ROUTINE"},
     ]
     medicine_table = f"{PROJECT_ID}.{DATASET_ID}.medicines"
-    client.insert_rows_json(medicine_table, medicine_data)
+    insert_rows_with_retry(client, medicine_table, medicine_data)
     print("Medicines table seeded.")
 
     # 3. Seed Consumption History (90 Days)
@@ -166,7 +190,7 @@ def seed_data():
     consumption_table = f"{PROJECT_ID}.{DATASET_ID}.consumption_history"
     for i in range(0, len(consumption_rows), chunk_size):
         chunk = consumption_rows[i:i+chunk_size]
-        client.insert_rows_json(consumption_table, chunk)
+        insert_rows_with_retry(client, consumption_table, chunk)
     print(f"Consumption history table seeded with {len(consumption_rows)} entries.")
 
     # 4. Seed Current Inventory
@@ -202,7 +226,7 @@ def seed_data():
             })
             
     inventory_table = f"{PROJECT_ID}.{DATASET_ID}.inventory"
-    client.insert_rows_json(inventory_table, inventory_rows)
+    insert_rows_with_retry(client, inventory_table, inventory_rows)
     print("Current inventory table seeded.")
 
 def build_forecast_model():
@@ -235,6 +259,8 @@ if __name__ == "__main__":
     import sys
     print("Initializing BigQuery schema...")
     create_tables()
+    import time
+    time.sleep(5)
     
     print("Seeding mock telemetry...")
     try:
