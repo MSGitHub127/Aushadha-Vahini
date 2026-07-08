@@ -649,6 +649,45 @@ def generate_mock_transfer_rows(writer):
         ])
 
 
+@app.post("/api/upload/flush")
+def flush_uploads():
+    """
+    Deletes all dynamically uploaded stock sheet images from static/uploads/
+    and truncates the inventory review queue in the database.
+    """
+    # 1. Clear files in static/uploads/ (except clean_sheet.jpg and blurred_sheet.jpg)
+    uploads_dir = "static/uploads"
+    deleted_count = 0
+    if os.path.exists(uploads_dir):
+        for filename in os.listdir(uploads_dir):
+            if filename in ["clean_sheet.jpg", "blurred_sheet.jpg"]:
+                continue
+            file_path = os.path.join(uploads_dir, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                    deleted_count += 1
+            except Exception as e:
+                logger.error(f"Failed to delete upload file {file_path}: {e}")
+                
+    # 2. Clear review queue in BQ
+    client = get_bq_client()
+    if client:
+        try:
+            sql = f"DELETE FROM `{PROJECT_ID}.{DATASET_ID}.inventory_review_queue` WHERE TRUE"
+            client.query(sql).result()
+            logger.info("BigQuery inventory_review_queue flushed.")
+        except Exception as e:
+            logger.error(f"Failed to clear BQ review queue: {e}")
+            
+    # 3. Clear mock review queue
+    global mock_review_queue
+    mock_review_queue.clear()
+    logger.info("Mock review queue flushed.")
+    
+    return {"status": "SUCCESS", "deleted_files_count": deleted_count}
+
+
 # Mount static files (must be registered last)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

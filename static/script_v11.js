@@ -127,7 +127,8 @@ const TRANSLATIONS = {
         "ai-alert-title": "PHC Utnoor: Paracetamol Low",
         "ai-alert-desc": "ARIMA_PLUS model predicts shortage in 5 days due to a seasonal Dengue consumption spike.",
         "ai-suggested-action-html": "Suggested Action: Transfer <strong>120 units</strong> of Paracetamol from <strong>PHC Indervelly</strong> (Surplus).",
-        "btn-accept-recommendation-html": "⚡ Accept Recommendation"
+        "btn-accept-recommendation-html": "⚡ Accept Recommendation",
+        "btn-flush-uploads": "🗑️ Flush Uploads"
     },
     hi: {
         "nav-dashboard": "Dashboard",
@@ -235,7 +236,8 @@ const TRANSLATIONS = {
         "ai-alert-title": "PHC Utnoor: Paracetamol की कमी",
         "ai-alert-desc": "ARIMA_PLUS मॉडल मौसमी डेंगू की खपत में वृद्धि के कारण 5 दिनों में कमी का अनुमान लगाता है।",
         "ai-suggested-action-html": "सुझाया गया कार्य: <strong>PHC Indervelly</strong> (अधिशेष) से Paracetamol की <strong>120 इकाइयाँ</strong> स्थानांतरित करें।",
-        "btn-accept-recommendation-html": "⚡ सिफारिश स्वीकार करें"
+        "btn-accept-recommendation-html": "⚡ सिफारिश स्वीकार करें",
+        "btn-flush-uploads": "🗑️ अपलोड साफ़ करें"
     }
 };
 
@@ -1466,4 +1468,39 @@ function showCustomAlert(title, message, badgeText = '🟢 System Notification')
         badgeEl.innerText = badgeText;
     }
     modal.style.display = 'flex';
+}
+
+async function flushUploadedDocs() {
+    const confirmMsg = currentLang === 'hi' 
+        ? "क्या आप वाकई सभी अपलोड की गई छवियों और सत्यापन कतार को हटाना चाहते हैं?" 
+        : "Are you sure you want to flush all uploaded document images and clear the review queue?";
+    if (!confirm(confirmMsg)) return;
+    
+    try {
+        const response = await fetch('/api/upload/flush', { method: 'POST' });
+        if (response.ok) {
+            const data = await response.json();
+            const successMsg = currentLang === 'hi'
+                ? `सफलतापूर्वक ${data.deleted_files_count} फाइलें और कतार साफ़ की गई!`
+                : `Successfully flushed review queue and deleted ${data.deleted_files_count} files!`;
+            loggerSpeak("Uploaded documents flushed successfully", "Cleared all uploaded inventory sheets.");
+            alert(successMsg);
+            
+            // Clear the preview content if any
+            const container = document.getElementById('ocr-preview-container');
+            if (container) {
+                container.innerHTML = `<div class="preview-placeholder">${currentLang === 'hi' ? 'Upload के बाद extraction परिणाम यहाँ दिखाई देंगे।' : 'Image extraction results will render here after upload.'}</div>`;
+            }
+            
+            // Reload the review queue badge and queue view
+            loadReviewQueueBadge();
+            loadReviewQueue();
+            refreshData();
+        } else {
+            alert(currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.");
+        }
+    } catch (e) {
+        console.error("Flush uploads failed:", e);
+        alert(currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.");
+    }
 }
