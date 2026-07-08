@@ -1470,37 +1470,83 @@ function showCustomAlert(title, message, badgeText = '🟢 System Notification')
     modal.style.display = 'flex';
 }
 
+function showCustomConfirm(title, message, onOk) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-modal-title');
+    const descEl = document.getElementById('confirm-modal-desc');
+    const cancelBtn = document.getElementById('btn-confirm-cancel');
+    const okBtn = document.getElementById('btn-confirm-ok');
+    
+    if (!modal || !titleEl || !descEl || !cancelBtn || !okBtn) return;
+    
+    titleEl.innerText = title;
+    descEl.innerText = message;
+    
+    // Set localized button labels
+    cancelBtn.innerText = currentLang === 'hi' ? "रद्द करें" : "Cancel";
+    okBtn.innerText = currentLang === 'hi' ? "पुष्टि करें" : "Confirm";
+    
+    modal.style.display = 'flex';
+    
+    // Clone elements to remove previous event listeners
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newOkBtn = okBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    
+    newCancelBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    newOkBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+        onOk();
+    });
+}
+
 async function flushUploadedDocs() {
+    const confirmTitle = currentLang === 'hi' ? "पुष्टि की आवश्यकता है" : "Confirmation Required";
     const confirmMsg = currentLang === 'hi' 
         ? "क्या आप वाकई सभी अपलोड की गई छवियों और सत्यापन कतार को हटाना चाहते हैं?" 
         : "Are you sure you want to flush all uploaded document images and clear the review queue?";
-    if (!confirm(confirmMsg)) return;
-    
-    try {
-        const response = await fetch('/api/upload/flush', { method: 'POST' });
-        if (response.ok) {
-            const data = await response.json();
-            const successMsg = currentLang === 'hi'
-                ? `सफलतापूर्वक ${data.deleted_files_count} फाइलें और कतार साफ़ की गई!`
-                : `Successfully flushed review queue and deleted ${data.deleted_files_count} files!`;
-            loggerSpeak("Uploaded documents flushed successfully", "Cleared all uploaded inventory sheets.");
-            alert(successMsg);
-            
-            // Clear the preview content if any
-            const container = document.getElementById('ocr-preview-container');
-            if (container) {
-                container.innerHTML = `<div class="preview-placeholder">${currentLang === 'hi' ? 'Upload के बाद extraction परिणाम यहाँ दिखाई देंगे।' : 'Image extraction results will render here after upload.'}</div>`;
+        
+    showCustomConfirm(confirmTitle, confirmMsg, async () => {
+        try {
+            const response = await fetch('/api/upload/flush', { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                const successTitle = currentLang === 'hi' ? "सफलता" : "Success";
+                const successMsg = currentLang === 'hi'
+                    ? `सफलतापूर्वक ${data.deleted_files_count} फाइलें और कतार साफ़ की गई!`
+                    : `Successfully flushed review queue and deleted ${data.deleted_files_count} files!`;
+                loggerSpeak("Uploaded documents flushed successfully", "Cleared all uploaded inventory sheets.");
+                
+                showCustomAlert(successTitle, successMsg, currentLang === 'hi' ? '🟢 सिस्टम अधिसूचना' : '🟢 System Notification');
+                
+                // Clear the preview content if any
+                const container = document.getElementById('ocr-preview-container');
+                if (container) {
+                    container.innerHTML = `<div class="preview-placeholder">${currentLang === 'hi' ? 'Upload के बाद extraction परिणाम यहाँ दिखाई देंगे।' : 'Image extraction results will render here after upload.'}</div>`;
+                }
+                
+                // Reload the review queue badge and queue view
+                loadReviewQueueBadge();
+                loadReviewQueue();
+                refreshData();
+            } else {
+                showCustomAlert(
+                    currentLang === 'hi' ? "त्रुटि" : "Error",
+                    currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.",
+                    currentLang === 'hi' ? '🔴 सिस्टम त्रुटि' : '🔴 System Error'
+                );
             }
-            
-            // Reload the review queue badge and queue view
-            loadReviewQueueBadge();
-            loadReviewQueue();
-            refreshData();
-        } else {
-            alert(currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.");
+        } catch (e) {
+            console.error("Flush uploads failed:", e);
+            showCustomAlert(
+                currentLang === 'hi' ? "त्रुटि" : "Error",
+                currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.",
+                currentLang === 'hi' ? '🔴 सिस्टम त्रुटि' : '🔴 System Error'
+            );
         }
-    } catch (e) {
-        console.error("Flush uploads failed:", e);
-        alert(currentLang === 'hi' ? "फ्लश करने में विफल।" : "Failed to flush uploads.");
-    }
+    });
 }

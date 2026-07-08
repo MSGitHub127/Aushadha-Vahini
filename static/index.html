@@ -696,6 +696,21 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="confirm-modal" style="display: none;">
+        <div class="modal-card card" style="max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
+                <h3 id="confirm-modal-title" style="font-size:16px; font-weight:700; color:var(--text-primary);">Confirmation Required</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-modal-desc" style="font-size:13px; color:var(--text-primary); margin-bottom:20px; line-height:1.4;"></p>
+                <div style="text-align:right; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" id="btn-confirm-cancel" style="padding:8px 16px; font-size:13px; border-radius:8px; background: #e2e8f0; color: var(--text-primary); border: none; cursor: pointer; font-weight: 600;">Cancel</button>
+                    <button class="btn btn-danger" id="btn-confirm-ok" style="padding:8px 16px; font-size:13px; border-radius:8px; font-weight: 700;">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/script_v11.js"></script>
 </body>
 </html>
