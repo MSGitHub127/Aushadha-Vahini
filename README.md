@@ -40,7 +40,6 @@
 
 - [🔴 The Problem](#-the-problem)
 - [🟢 The Solution](#-the-solution)
-- [🏆 Why This Wins](#-why-this-wins)
 - [🏗️ Architecture](#️-architecture)
 - [🧠 Two AI Stages, Not One](#-two-ai-stages-not-one)
 - [⚡ Tech Stack](#-tech-stack)
@@ -87,20 +86,9 @@ Primary and Community Health Centres across India track medicine stock, patient 
 
 > **No new app to learn. No new habit to build.** The paper register staff already keep is the input. Everything downstream is where the intelligence lives.
 
----
-
-## 🏆 Why This Wins
-
-| Criterion | Weight | How Aushadha Vahini Delivers |
-|:---|:---:|:---|
-| 🎯 **Problem-Solution Fit** | 20% | Attacks the specific failure mode most health-tech misses: not *absence* of medicine district-wide, but *failure to move it* to where it's needed in time. |
-| 🤖 **AI/Technical Execution** | 25% | Two distinct, genuine AI stages — prediction via ARIMA_PLUS and reasoning via Gemini. Not a threshold rule wearing an AI costume. |
-| 🚀 **Deployability & Scalability** | 25% | Managed GCP services only (BigQuery, Gemini, Cloud Run, Cloud TTS). No custom infra. Scales from one district to the next by changing a dataset, not the architecture. |
-| 🌐 **Inclusivity & Accessibility** | 15% | Voice-first output in Hindi, confidence-gated OCR so uncertain reads never silently corrupt data, graceful fallback mode when connectivity is unavailable. |
-| 💡 **Impact Potential** | 10% | Piloted at real district scale — 20 PHCs, 5 CHCs, Adilabad, Telangana. |
-| 📊 **Presentation & Clarity** | 5% | A five-second executive summary strip, built so a District Magistrate understands facility status before they've finished sitting down. |
 
 ---
+
 
 ## 🏗️ Architecture
 
